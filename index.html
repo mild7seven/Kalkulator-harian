@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FuelNav Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --primary: #1e293b;
+            --accent: #10b981;
+            --text-main: #334155;
+            --text-muted: #64748b;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg); color: var(--text-main); 
+            margin: 0; padding: 15px; display: flex; justify-content: center; 
+        }
+        .app-container { width: 100%; max-width: 450px; }
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { font-size: 1.5rem; color: var(--primary); margin: 0; }
+        .card { 
+            background: var(--card); padding: 20px; border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 15px; 
+        }
+        .card-title { 
+            font-size: 0.85rem; font-weight: 700; color: var(--text-muted); 
+            text-transform: uppercase; margin-bottom: 15px; display: block; 
+            letter-spacing: 0.05em;
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; }
+        input, select { 
+            width: 100%; padding: 12px; border: 1px solid #e2e8f0; 
+            border-radius: 10px; font-size: 1rem; box-sizing: border-box; 
+            background: #fff; color: var(--text-main);
+        }
+        button { 
+            width: 100%; padding: 15px; border-radius: 12px; border: none; 
+            font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; 
+        }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-save { background: var(--primary); color: white; margin-bottom: 10px; }
+        .btn-calc { background: var(--accent); color: white; }
+        .result-box { 
+            margin-top: 15px; display: none; border-top: 2px dashed #e2e8f0; 
+            padding-top: 15px; animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .res-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; }
+        .res-val { font-weight: 700; color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>FuelNav Pro</h1>
+    </header>
+
+    <div class="card">
+        <span class="card-title">Profil Kendaraan</span>
+        <div class="grid">
+            <div class="input-group">
+                <label>Kapasitas Tangki (L)</label>
+                <input type="number" id="tankTotal" placeholder="Contoh: 45">
+            </div>
+            <div class="input-group">
+                <label>Konsumsi (Km/L)</label>
+                <input type="number" id="avgCons" placeholder="Contoh: 11">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Rute Harian PP (Km)</label>
+            <input type="number" id="dailyCommute" placeholder="Contoh: 37">
+        </div>
+        <button class="btn-save" onclick="saveProfile()">Simpan Profil</button>
+    </div>
+
+    <div class="card">
+        <span class="card-title">Kalkulator Harian</span>
+        <div class="grid">
+            <div class="input-group">
+                <label>Merek BBM</label>
+                <select id="fBrand" onchange="updateFuelTypes()">
+                    <option value="">Pilih...</option>
+                    <option value="Pertamina">Pertamina</option>
+                    <option value="Shell">Shell</option>
+                    <option value="Vivo">Vivo</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Jenis BBM</label>
+                <select id="fType" onchange="loadSavedPrice()">
+                    <option value="">Pilih Merek...</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="input-group">
+                <label>Harga per Liter (Rp)</label>
+                <input type="number" id="fuelPrice" placeholder="Ketik Harga...">
+            </div>
+            <div class="input-group">
+                <label>Sisa Bensin (Liter)</label>
+                <input type="number" id="tankCurrent" step="0.001" placeholder="Contoh: 28.125">
+            </div>
+        </div>
+        
+        <button class="btn-calc" onclick="calculate()">Hitung Estimasi</button>
+
+        <div id="resultBox" class="result-box">
+            <div class="res-item">Indikator MID (8 Bar): <span class="res-val" id="resBar">-</span></div>
+            <div class="res-item">Jarak Tempuh Aman: <span class="res-val" id="resRange">-</span></div>
+            <div class="res-item">Daya Tahan Komuter: <span class="res-val" id="resDays">-</span></div>
+            <div class="res-item">Biaya Isi Penuh: <span class="res-val" id="resCost">-</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Daftar Jenis BBM hanya untuk Dropdown
+    const fuelList = {
+        "Pertamina": ["Pertalite", "Pertamax", "Pertamax Turbo", "Pertamina Dex", "Dexlite"],
+        "Shell": ["Super", "V-Power", "V-Power Nitro+", "V-Power Diesel"],
+        "Vivo": ["Revvo 90", "Revvo 92", "Revvo 95"]
+    };
+
+    // Muat data profil saat aplikasi dibuka
+    window.addEventListener('DOMContentLoaded', () => {
+        if(localStorage.getItem('fnav_tank')) {
+            document.getElementById('tankTotal').value = localStorage.getItem('fnav_tank');
+            document.getElementById('avgCons').value = localStorage.getItem('fnav_cons');
+            document.getElementById('dailyCommute').value = localStorage.getItem('fnav_commute');
+        }
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log("SW error:", err));
+        }
+    });
+
+    function saveProfile() {
+        const t = document.getElementById('tankTotal').value;
+        const c = document.getElementById('avgCons').value;
+        const r = document.getElementById('dailyCommute').value;
+        
+        if(!t || !c || !r) return alert("Harap lengkapi semua data profil!");
+        
+        localStorage.setItem('fnav_tank', t);
+        localStorage.setItem('fnav_cons', c);
+        localStorage.setItem('fnav_commute', r);
+        alert("Profil Kendaraan Berhasil Disimpan!");
+    }
+
+    function updateFuelTypes() {
+        const brand = document.getElementById('fBrand').value;
+        const typeSelect = document.getElementById('fType');
+        typeSelect.innerHTML = '<option value="">Pilih Jenis...</option>';
+        document.getElementById('fuelPrice').value = ""; // Reset harga saat ganti merek
+        
+        if(brand) {
+            fuelList[brand].forEach(type => {
+                let opt = document.createElement('option');
+                opt.value = type;
+                opt.innerHTML = type;
+                typeSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function loadSavedPrice() {
+        const type = document.getElementById('fType').value;
+        const priceInput = document.getElementById('fuelPrice');
+        
+        if(type) {
+            // Cek apakah sebelumnya pengguna pernah menyimpan harga untuk jenis bensin ini
+            const savedPrice = localStorage.getItem('price_' + type);
+            if(savedPrice) {
+                priceInput.value = savedPrice;
+            } else {
+                priceInput.value = ""; // Kosongkan jika belum ada riwayat
+            }
+        }
+    }
+
+    function calculate() {
+        const total = parseFloat(document.getElementById('tankTotal').value);
+        const current = parseFloat(document.getElementById('tankCurrent').value);
+        const cons = parseFloat(document.getElementById('avgCons').value);
+        const commute = parseFloat(document.getElementById('dailyCommute').value);
+        const price = parseFloat(document.getElementById('fuelPrice').value);
+        const fuelType = document.getElementById('fType').value;
+
+        if(!total || isNaN(current) || !cons || !commute || !price) {
+            alert("Harap isi semua kolom, termasuk harga BBM dan sisa bensin!");
+            return;
+        }
+
+        // Simpan harga yang baru diketik ke memori pintar
+        if(fuelType) {
+            localStorage.setItem('price_' + fuelType, price);
+        }
+
+        // Logika Cadangan (Reserve) 12.5%
+        const reserve = total * 0.125; 
+        const effectiveFuel = Math.max(0, current - reserve);
+        
+        // Kalkulasi Bar MID
+        const barValue = Math.floor((effectiveFuel / (total - reserve)) * 8);
+        const barDisplay = (current <= reserve) ? "Empty (E)" : `${barValue} / 8 Bar`;
+        
+        const range = effectiveFuel * cons;
+        const days = range / commute;
+        const topupCost = (total - current) * price;
+
+        // Tampilkan Hasil
+        document.getElementById('resBar').innerText = barDisplay;
+        document.getElementById('resRange').innerText = range.toFixed(1) + " Km";
+        document.getElementById('resDays').innerText = Math.floor(days) + " Hari Kerja";
+        document.getElementById('resCost').innerText = "Rp " + Math.round(topupCost).toLocaleString('id-ID');
+        
+        document.getElementById('resultBox').style.display = "block";
+    }
+</script>
+
+</body>
+</html>
