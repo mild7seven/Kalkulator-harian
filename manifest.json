@@ -1,21 +1,14 @@
 {
-  "name": "FuelNav Pro - Kalkulator Harian",
+  "name": "FuelNav Pro - Fuel & MID Calc",
   "short_name": "FuelNav",
-  "description": "Aplikasi utilitas offline untuk estimasi konsumsi BBM dan jarak tempuh kendaraan.",
-  "start_url": "./index.html",
+  "description": "Kalkulator bahan bakar dengan tampilan Multi-Information Display (MID) mobil.",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "background_color": "#f1f5f9",
   "theme_color": "#1e293b",
-  "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/833/833339.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
