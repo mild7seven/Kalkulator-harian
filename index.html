@@ -7,6 +7,10 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+
     <style>
         :root {
             --bg: #f1f5f9;
@@ -59,7 +63,6 @@
         .bar.active { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
         .bar.warning { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
         .bar.danger { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
-        /* -------------------------- */
 
         .card { 
             background: var(--card); padding: 20px; border-radius: 16px; 
@@ -69,6 +72,32 @@
             font-size: 0.8rem; font-weight: 800; color: var(--text-muted); 
             text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.05em;
         }
+        
+        /* --- Map Styles --- */
+        #mapContainer {
+            width: 100%;
+            height: 250px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1.5px solid #e2e8f0;
+            position: relative;
+        }
+        .map-instruction {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .btn-map-action {
+            background: #3b82f6;
+            color: white;
+            padding: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+        
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
@@ -128,6 +157,17 @@
     </div>
 
     <div class="card">
+        <span class="card-title">Hitung Jarak Rute Otomatis</span>
+        <div class="map-instruction">Tap 2 titik di peta (Berangkat & Tujuan)</div>
+        <div id="mapContainer"></div>
+        <button class="btn-map-action" onclick="resetMap()">Reset Titik Peta</button>
+        <div class="input-group">
+            <label>Rute Harian PP (Km)</label>
+            <input type="number" id="dailyCommute" placeholder="Misal: 37">
+        </div>
+    </div>
+
+    <div class="card">
         <span class="card-title">Profil Kendaraan</span>
         <div class="grid">
             <div class="input-group">
@@ -138,10 +178,6 @@
                 <label>Konsumsi (Km/L)</label>
                 <input type="number" id="avgCons" placeholder="11">
             </div>
-        </div>
-        <div class="input-group">
-            <label>Rute Harian PP (Km)</label>
-            <input type="number" id="dailyCommute" placeholder="37">
         </div>
         <button class="btn-save" onclick="saveProfile()">Simpan Profil</button>
     </div>
@@ -161,9 +197,9 @@
                     </optgroup>
                     <optgroup label="Vivo">
                         <option>Revvo 92</option><option>Revvo 95</option>
+                    </optgroup>
                     <optgroup label="BP">
                         <option>BP Ultima 92</option>
-                    </optgroup>
                     </optgroup>
                 </select>
             </div>
@@ -174,7 +210,7 @@
         </div>
         <div class="input-group">
             <label>Harga per Liter (Rp)</label>
-            <input type="number" id="fuelPrice" placeholder="Rp 10.000">
+            <input type="number" id="fuelPrice" placeholder="Misal: 10000">
         </div>
         <button class="btn-calc" onclick="calculate()">Proses ke MID</button>
 
@@ -186,12 +222,105 @@
 </div>
 
 <script>
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+    // --- OPENLAYERS MAP LOGIC ---
+    let map, vectorSource, vectorLayer;
+    let waypoints = []; // Menyimpan maksimal 2 koordinat (LonLat)
+
+    function initMap() {
+        vectorSource = new ol.source.Vector();
+        vectorLayer = new ol.layer.Vector({
+            source: vectorSource,
+            style: new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#38bdf8',
+                    width: 4
+                }),
+                image: new ol.style.Circle({
+                    radius: 6,
+                    fill: new ol.style.Fill({ color: '#ef4444' }),
+                    stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
+                })
+            })
+        });
+
+        map = new ol.Map({
+            target: 'mapContainer',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM() // Peta dasar OpenStreetMap
+                }),
+                vectorLayer
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([106.8797, -6.4820]), // Fokus area Citeureup/Bogor
+                zoom: 12
+            }),
+            controls: [] // Menghilangkan kontrol default agar lebih rapi di mobile
+        });
+
+        // Event tap/click pada peta
+        map.on('singleclick', function (evt) {
+            if (waypoints.length >= 2) return; // Batasi hanya 2 titik
+
+            const coord = evt.coordinate;
+            const lonLat = ol.proj.toLonLat(coord);
+            waypoints.push(lonLat);
+
+            // Tambahkan marker (titik merah) ke peta
+            const marker = new ol.Feature({ geometry: new ol.geom.Point(coord) });
+            vectorSource.addFeature(marker);
+
+            if (waypoints.length === 2) {
+                calculateRoute();
+            }
+        });
     }
 
+    async function calculateRoute() {
+        const p1 = waypoints[0].join(',');
+        const p2 = waypoints[1].join(',');
+        
+        // Menggunakan OSRM Public API (Tanpa Key)
+        const url = `https://router.project-osrm.org/route/v1/driving/${p1};${p2}?overview=full&geometries=geojson`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.code === 'Ok') {
+                const route = data.routes[0];
+                const distanceKm = route.distance / 1000;
+                
+                // Set nilai ke input (dikali 2 untuk PP), dibulatkan 1 angka desimal
+                const totalPP = (distanceKm * 2).toFixed(1);
+                document.getElementById('dailyCommute').value = totalPP;
+
+                // Gambar garis rute
+                const routeGeom = new ol.geom.LineString(route.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857');
+                const routeFeature = new ol.Feature({ geometry: routeGeom });
+                vectorSource.addFeature(routeFeature);
+
+                // Otomatis simpan dan panggil kalkulasi MID
+                saveProfile();
+                if(document.getElementById('tankCurrent').value) {
+                    calculate();
+                }
+            }
+        } catch (err) {
+            alert("Gagal menghitung rute, pastikan koneksi internet aktif.");
+        }
+    }
+
+    function resetMap() {
+        waypoints = [];
+        vectorSource.clear();
+        document.getElementById('dailyCommute').value = '';
+    }
+
+    // Inisialisasi Peta setelah DOM siap
     window.addEventListener('DOMContentLoaded', () => {
+        initMap();
+        
         if(localStorage.getItem('fnav_tank')) {
             document.getElementById('tankTotal').value = localStorage.getItem('fnav_tank');
             document.getElementById('avgCons').value = localStorage.getItem('fnav_cons');
@@ -200,17 +329,21 @@
         }
     });
 
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
     function saveProfile() {
         const t = document.getElementById('tankTotal').value;
         const c = document.getElementById('avgCons').value;
         const r = document.getElementById('dailyCommute').value;
-        if(!t || !c || !r) return alert("Lengkapi profil!");
+        if(!t || !c || !r) return; // Hilangkan alert agar tidak mengganggu otomasi rute
         
         localStorage.setItem('fnav_tank', t);
         localStorage.setItem('fnav_cons', c);
         localStorage.setItem('fnav_commute', r);
         document.getElementById('midAvg').innerText = parseFloat(c).toFixed(1);
-        alert("Profil Tersimpan!");
     }
 
     function loadSavedPrice() {
@@ -229,7 +362,7 @@
         const price = parseFloat(document.getElementById('fuelPrice').value);
         const fuelType = document.getElementById('fType').value;
 
-        if(!total || isNaN(current) || !cons || !commute || !price) return alert("Isi semua data!");
+        if(!total || isNaN(current) || !cons || !commute || !price) return alert("Isi semua data termasuk Rute/Sisa Bensin!");
         if(fuelType) localStorage.setItem('price_' + fuelType, price);
 
         const reserve = total * 0.125; 
