@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -31,7 +31,7 @@
         header { text-align: center; margin-bottom: 20px; }
         header h1 { font-size: 1.4rem; color: var(--primary); margin: 0; font-weight: 800; }
         
-        /* --- Layar MID Digital --- */
+        /* --- Digital MID Display --- */
         .mid-display {
             background: var(--mid-bg);
             border-radius: 16px;
@@ -75,28 +75,19 @@
         
         /* --- Map Styles --- */
         #mapContainer {
-            width: 100%;
-            height: 250px;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            border: 1.5px solid #e2e8f0;
+            width: 100%; height: 250px; border-radius: 12px;
+            overflow: hidden; margin-bottom: 10px; border: 1.5px solid #e2e8f0;
             position: relative;
         }
         .map-instruction {
-            font-size: 0.75rem;
-            color: #64748b;
-            text-align: center;
-            margin-bottom: 10px;
-            font-style: italic;
+            font-size: 0.75rem; color: #64748b; text-align: center;
+            margin-bottom: 10px; font-style: italic;
         }
-        .btn-map-action {
-            background: #3b82f6;
-            color: white;
-            padding: 10px;
-            font-size: 0.85rem;
-            margin-bottom: 15px;
+        .btn-action {
+            padding: 12px; font-size: 0.9rem; font-weight: 700; border: none;
+            border-radius: 12px; color: white; cursor: pointer; transition: 0.2s; width: 100%;
         }
+        .btn-action:active { transform: scale(0.97); }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .input-group { margin-bottom: 15px; }
@@ -107,13 +98,8 @@
             background: #fff; color: var(--text-main); outline: none; transition: 0.2s;
         }
         input:focus { border-color: var(--mid-text); }
-        button { 
-            width: 100%; padding: 16px; border-radius: 12px; border: none; 
-            font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.2s; 
-        }
-        button:active { transform: scale(0.97); }
-        .btn-save { background: var(--primary); color: white; margin-bottom: 10px; }
-        .btn-calc { background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
+        .btn-save { background: var(--primary); color: white; margin-bottom: 10px; padding: 16px; width: 100%; border-radius: 12px; border: none; font-weight: 700; }
+        .btn-calc { background: var(--accent); color: white; padding: 16px; width: 100%; border-radius: 12px; border: none; font-weight: 700; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
         
         .result-box { 
             margin-top: 15px; display: none; border-top: 2px dashed #e2e8f0; 
@@ -157,87 +143,94 @@
     </div>
 
     <div class="card">
-        <span class="card-title">Hitung Jarak Rute Otomatis</span>
-        <div class="map-instruction">Tap 2 titik di peta (Berangkat & Tujuan)</div>
+        <span class="card-title">Route Search & Navigation</span>
+        
+        <div class="input-group" style="margin-bottom: 10px;">
+            <input type="text" id="startLocation" placeholder="Start Location (e.g., Home)" style="margin-bottom: 8px;">
+            <input type="text" id="endLocation" placeholder="End Location (e.g., Workplace)">
+        </div>
+        <button id="btnSearch" class="btn-action" style="background: #3b82f6; margin-bottom: 15px;" onclick="searchAndRoute()">Search Route</button>
+
+        <div class="map-instruction">Or tap 2 points directly on the map</div>
         <div id="mapContainer"></div>
-        <button class="btn-map-action" onclick="resetMap()">Reset Titik Peta</button>
+        
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <button class="btn-action" style="background: #64748b;" onclick="resetMap()">Reset Map</button>
+            <button id="btnNav" class="btn-action" style="background: #10b981; display: none;" onclick="startRealtimeNavigation()">Start Navigation</button>
+        </div>
+
         <div class="input-group">
-            <label>Rute Harian PP (Km)</label>
-            <input type="number" id="dailyCommute" placeholder="Misal: 37">
+            <label>Daily Commute Round-Trip (km)</label>
+            <input type="number" id="dailyCommute" placeholder="Auto-calculated...">
         </div>
     </div>
 
     <div class="card">
-        <span class="card-title">Profil Kendaraan</span>
+        <span class="card-title">Vehicle Profile</span>
         <div class="grid">
             <div class="input-group">
-                <label>Kapasitas Tangki (L)</label>
+                <label>Tank Capacity (L)</label>
                 <input type="number" id="tankTotal" placeholder="45">
             </div>
             <div class="input-group">
-                <label>Konsumsi (Km/L)</label>
+                <label>Consumption (km/L)</label>
                 <input type="number" id="avgCons" placeholder="11">
             </div>
         </div>
-        <button class="btn-save" onclick="saveProfile()">Simpan Profil</button>
+        <button class="btn-save" onclick="saveProfile()">Save Profile</button>
     </div>
 
     <div class="card">
-        <span class="card-title">Data Perjalanan</span>
+        <span class="card-title">Trip Data</span>
         <div class="grid">
             <div class="input-group">
-                <label>Jenis BBM</label>
+                <label>Fuel Type</label>
                 <select id="fType" onchange="loadSavedPrice()">
-                    <option value="">Pilih...</option>
+                    <option value="">Select...</option>
                     <optgroup label="Pertamina">
-                        <option>Pertalite</option><option>Pertamax</option><option>Pertamax Turbo</option><option>Pertamax Green 95</option>
+                        <option>Pertalite</option><option>Pertamax</option><option>Pertamax Turbo</option>
                     </optgroup>
                     <optgroup label="Shell">
-                        <option>Super</option><option>V-Power</option><option>V-Power+Nitro</option>
-                    </optgroup>
-                    <optgroup label="Vivo">
-                        <option>Revvo 92</option><option>Revvo 95</option>
-                    </optgroup>
-                    <optgroup label="BP">
-                        <option>BP Ultima 92</option>
+                        <option>Super</option><option>V-Power</option>
                     </optgroup>
                 </select>
             </div>
             <div class="input-group">
-                <label>Sisa Bensin (L)</label>
+                <label>Current Fuel (L)</label>
                 <input type="number" id="tankCurrent" step="0.01" placeholder="0.00">
             </div>
         </div>
         <div class="input-group">
-            <label>Harga per Liter (Rp)</label>
-            <input type="number" id="fuelPrice" placeholder="Misal: 10000">
+            <label>Price per Liter</label>
+            <input type="number" id="fuelPrice" placeholder="e.g., 10000">
         </div>
-        <button class="btn-calc" onclick="calculate()">Proses ke MID</button>
+        <button class="btn-calc" onclick="calculate()">Calculate MID</button>
 
         <div id="resultBox" class="result-box">
-            <div class="res-item">Daya Tahan: <span class="res-val" id="resDays">-</span></div>
-            <div class="res-item">Biaya Isi Penuh: <span class="res-val" id="resCost">-</span></div>
+            <div class="res-item">Estimated Duration: <span class="res-val" id="resDays">-</span></div>
+            <div class="res-item">Full Tank Cost: <span class="res-val" id="resCost">-</span></div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- OPENLAYERS MAP LOGIC ---
+    // --- MAP & NAVIGATION LOGIC ---
     let map, vectorSource, vectorLayer;
-    let waypoints = []; // Menyimpan maksimal 2 koordinat (LonLat)
+    let waypoints = []; 
+    let watchId = null;
+    let userArrowFeature = null;
+
+    const arrowSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="#3b82f6" stroke="#ffffff" stroke-width="2" d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>';
+    const arrowUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(arrowSvg);
 
     function initMap() {
         vectorSource = new ol.source.Vector();
         vectorLayer = new ol.layer.Vector({
             source: vectorSource,
             style: new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                    color: '#38bdf8',
-                    width: 4
-                }),
+                stroke: new ol.style.Stroke({ color: '#38bdf8', width: 4 }),
                 image: new ol.style.Circle({
-                    radius: 6,
-                    fill: new ol.style.Fill({ color: '#ef4444' }),
+                    radius: 6, fill: new ol.style.Fill({ color: '#ef4444' }),
                     stroke: new ol.style.Stroke({ color: '#ffffff', width: 2 })
                 })
             })
@@ -246,27 +239,23 @@
         map = new ol.Map({
             target: 'mapContainer',
             layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM() // Peta dasar OpenStreetMap
-                }),
+                new ol.layer.Tile({ source: new ol.source.OSM() }),
                 vectorLayer
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat([106.8797, -6.4820]), // Fokus area Citeureup/Bogor
+                center: ol.proj.fromLonLat([106.8797, -6.4820]), // Default center
                 zoom: 12
             }),
-            controls: [] // Menghilangkan kontrol default agar lebih rapi di mobile
+            controls: [] 
         });
 
-        // Event tap/click pada peta
         map.on('singleclick', function (evt) {
-            if (waypoints.length >= 2) return; // Batasi hanya 2 titik
+            if (waypoints.length >= 2) return; 
 
             const coord = evt.coordinate;
             const lonLat = ol.proj.toLonLat(coord);
             waypoints.push(lonLat);
 
-            // Tambahkan marker (titik merah) ke peta
             const marker = new ol.Feature({ geometry: new ol.geom.Point(coord) });
             vectorSource.addFeature(marker);
 
@@ -276,11 +265,56 @@
         });
     }
 
+    async function geocodeAddress(query) {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=1`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+            }
+            return null;
+        } catch (error) {
+            console.error("Geocoding error:", error);
+            return null;
+        }
+    }
+
+    async function searchAndRoute() {
+        const startQuery = document.getElementById('startLocation').value;
+        const endQuery = document.getElementById('endLocation').value;
+        if (!startQuery || !endQuery) return alert("Please enter both start and end locations.");
+
+        const btnSearch = document.getElementById('btnSearch');
+        btnSearch.innerText = "Searching...";
+        btnSearch.disabled = true;
+
+        const startCoord = await geocodeAddress(startQuery);
+        const endCoord = await geocodeAddress(endQuery);
+
+        btnSearch.innerText = "Search Route";
+        btnSearch.disabled = false;
+
+        if (!startCoord) return alert(`Start location "${startQuery}" not found.`);
+        if (!endCoord) return alert(`End location "${endQuery}" not found.`);
+
+        vectorSource.clear();
+        waypoints = [startCoord, endCoord];
+
+        const startMarker = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(startCoord)) });
+        const endMarker = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(endCoord)) });
+        
+        vectorSource.addFeatures([startMarker, endMarker]);
+
+        const extent = ol.extent.boundingExtent([ol.proj.fromLonLat(startCoord), ol.proj.fromLonLat(endCoord)]);
+        map.getView().fit(extent, { padding: [50, 50, 50, 50], duration: 1000 });
+
+        calculateRoute();
+    }
+
     async function calculateRoute() {
         const p1 = waypoints[0].join(',');
         const p2 = waypoints[1].join(',');
-        
-        // Menggunakan OSRM Public API (Tanpa Key)
         const url = `https://router.project-osrm.org/route/v1/driving/${p1};${p2}?overview=full&geometries=geojson`;
 
         try {
@@ -291,36 +325,84 @@
                 const route = data.routes[0];
                 const distanceKm = route.distance / 1000;
                 
-                // Set nilai ke input (dikali 2 untuk PP), dibulatkan 1 angka desimal
                 const totalPP = (distanceKm * 2).toFixed(1);
                 document.getElementById('dailyCommute').value = totalPP;
 
-                // Gambar garis rute
                 const routeGeom = new ol.geom.LineString(route.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857');
                 const routeFeature = new ol.Feature({ geometry: routeGeom });
                 vectorSource.addFeature(routeFeature);
 
-                // Otomatis simpan dan panggil kalkulasi MID
+                document.getElementById('btnNav').style.display = 'block';
+
                 saveProfile();
-                if(document.getElementById('tankCurrent').value) {
-                    calculate();
-                }
+                if(document.getElementById('tankCurrent').value) calculate();
             }
         } catch (err) {
-            alert("Gagal menghitung rute, pastikan koneksi internet aktif.");
+            alert("Failed to calculate route. Check internet connection.");
         }
+    }
+
+    function startRealtimeNavigation() {
+        if (!navigator.geolocation) return alert("Geolocation is not supported by your browser.");
+
+        const btnNav = document.getElementById('btnNav');
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            btnNav.innerText = "Start Navigation";
+            btnNav.style.background = "#10b981";
+            return;
+        }
+
+        btnNav.innerText = "Stop Navigation";
+        btnNav.style.background = "#ef4444";
+
+        if (!userArrowFeature) {
+            userArrowFeature = new ol.Feature();
+            userArrowFeature.setStyle(new ol.style.Style({
+                image: new ol.style.Icon({ src: arrowUrl, scale: 1, anchor: [0.5, 0.5], rotateWithView: true })
+            }));
+            vectorSource.addFeature(userArrowFeature);
+        }
+
+        watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const coords = [position.coords.longitude, position.coords.latitude];
+                const webMercatorCoords = ol.proj.fromLonLat(coords);
+
+                userArrowFeature.setGeometry(new ol.geom.Point(webMercatorCoords));
+                map.getView().animate({ center: webMercatorCoords, duration: 500, zoom: 17 });
+
+                if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
+                    const headingRadians = position.coords.heading * (Math.PI / 180);
+                    userArrowFeature.getStyle().getImage().setRotation(headingRadians);
+                    userArrowFeature.changed();
+                }
+            },
+            (error) => { console.warn("GPS Error: ", error.message); },
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
     }
 
     function resetMap() {
         waypoints = [];
         vectorSource.clear();
         document.getElementById('dailyCommute').value = '';
+        document.getElementById('btnNav').style.display = 'none';
+        userArrowFeature = null;
+        
+        if (watchId !== null) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            const btnNav = document.getElementById('btnNav');
+            btnNav.innerText = "Start Navigation";
+            btnNav.style.background = "#10b981";
+        }
     }
 
-    // Inisialisasi Peta setelah DOM siap
+    // --- APP LOGIC ---
     window.addEventListener('DOMContentLoaded', () => {
         initMap();
-        
         if(localStorage.getItem('fnav_tank')) {
             document.getElementById('tankTotal').value = localStorage.getItem('fnav_tank');
             document.getElementById('avgCons').value = localStorage.getItem('fnav_cons');
@@ -329,7 +411,6 @@
         }
     });
 
-    // PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     }
@@ -338,8 +419,7 @@
         const t = document.getElementById('tankTotal').value;
         const c = document.getElementById('avgCons').value;
         const r = document.getElementById('dailyCommute').value;
-        if(!t || !c || !r) return; // Hilangkan alert agar tidak mengganggu otomasi rute
-        
+        if(!t || !c || !r) return;
         localStorage.setItem('fnav_tank', t);
         localStorage.setItem('fnav_cons', c);
         localStorage.setItem('fnav_commute', r);
@@ -362,7 +442,7 @@
         const price = parseFloat(document.getElementById('fuelPrice').value);
         const fuelType = document.getElementById('fType').value;
 
-        if(!total || isNaN(current) || !cons || !commute || !price) return alert("Isi semua data termasuk Rute/Sisa Bensin!");
+        if(!total || isNaN(current) || !cons || !commute || !price) return alert("Please fill in all data!");
         if(fuelType) localStorage.setItem('price_' + fuelType, price);
 
         const reserve = total * 0.125; 
@@ -374,7 +454,6 @@
         let barValue = Math.floor((effectiveFuel / (total - reserve)) * 8);
         if (current <= reserve) barValue = 0;
 
-        // UI Update
         document.getElementById('midRange').innerText = (current <= reserve) ? "LOW" : Math.floor(range);
         document.getElementById('midAvg').innerText = cons.toFixed(1);
         
@@ -391,8 +470,8 @@
             }
         });
 
-        document.getElementById('resDays').innerText = Math.floor(days) + " Hari Kerja";
-        document.getElementById('resCost').innerText = "Rp " + Math.round(topupCost).toLocaleString('id-ID');
+        document.getElementById('resDays').innerText = Math.floor(days) + " Days";
+        document.getElementById('resCost').innerText = price.toLocaleString('en-US', {style: 'currency', currency: 'IDR'});
         document.getElementById('resultBox').style.display = "block";
     }
 </script>
