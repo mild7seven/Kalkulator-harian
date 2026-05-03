@@ -1,4 +1,6 @@
-const CACHE_NAME = 'fuelnav-pro-v3';
+const CACHE_NAME = 'fuelnav-pro-v4';
+
+// Core assets to pre-cache for offline UI loading
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -6,43 +8,36 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js'
 ];
 
-// Install Event: Cache base assets
+// Install Event: Pre-cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log('[Service Worker] Caching core assets');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  self.skipWaiting(); // Force the waiting service worker to become the active service worker
 });
 
-// Activate Event: Clear old caches when version updates
+// Activate Event: Clean up old caches when the version updates
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
       );
     })
   );
+  self.clients.claim(); // Take control of all clients immediately
 });
 
-// Fetch Strategy: Cache first, falling back to network
+// Fetch Event: Cache-first for static assets, Network-only for API calls
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request).then((fetchResponse) => {
-        // Cache dynamic external requests (like maps logic if needed)
-        return caches.open(CACHE_NAME).then((cache) => {
-          if (event.request.url.startsWith('http')) {
-             cache.put(event.request, fetchResponse.clone());
-          }
-          return fetchResponse;
-        });
-      });
-    }).catch(() => {
-      // Offline fallback
-      return caches.match('./index.html');
-    })
-  );
-});
+  const requestUrl = new URL(event.request.url);
+
+  // Do not cache map tiles (OSM), routing API (OSRM), or geocoding API (Nominatim)
