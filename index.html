@@ -33,78 +33,58 @@
         
         /* --- Digital MID Display --- */
         .mid-display {
-            background: var(--mid-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: var(--mid-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px;
             box-shadow: inset 0 0 25px rgba(0,0,0,0.5), 0 10px 15px -3px rgba(0,0,0,0.1);
             border: 2px solid #334155;
         }
         .mid-top { display: flex; justify-content: space-between; margin-bottom: 25px; }
         .mid-data { text-align: center; width: 48%; }
-        .mid-label { 
-            font-size: 0.7rem; color: #94a3b8; 
-            letter-spacing: 2px; display: block; margin-bottom: 4px; font-weight: 600;
-        }
+        .mid-label { font-size: 0.7rem; color: #94a3b8; letter-spacing: 2px; display: block; margin-bottom: 4px; font-weight: 600; }
         .mid-value-container { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
-        .mid-value { 
-            font-size: 2.2rem; font-weight: 700; color: var(--mid-text); 
-            text-shadow: 0 0 8px rgba(56, 189, 248, 0.4); font-family: 'Monaco', monospace;
-        }
+        .mid-value { font-size: 2.2rem; font-weight: 700; color: var(--mid-text); text-shadow: 0 0 8px rgba(56, 189, 248, 0.4); font-family: 'Monaco', monospace; }
         .mid-unit { font-size: 0.8rem; color: var(--mid-text); opacity: 0.8; }
         
         .mid-gauge-container { display: flex; align-items: center; gap: 12px; padding: 0 5px; }
         .fuel-icon { font-size: 1rem; color: #475569; font-weight: 900; transition: 0.3s; }
         .fuel-icon.red { color: #ef4444; text-shadow: 0 0 10px #ef4444; }
         .fuel-bars { display: flex; flex: 1; gap: 4px; height: 14px; }
-        .bar { 
-            flex: 1; background: #1e293b; border-radius: 2px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-        }
+        .bar { flex: 1; background: #1e293b; border-radius: 2px; transition: 0.4s; }
         .bar.active { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); }
         .bar.warning { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.6); }
         .bar.danger { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
 
-        .card { 
-            background: var(--card); padding: 20px; border-radius: 16px; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 15px; 
-        }
-        .card-title { 
-            font-size: 0.8rem; font-weight: 800; color: var(--text-muted); 
-            text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.05em;
-        }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card-title { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.05em; }
         
-        /* --- Map Styles --- */
-        #mapContainer {
-            width: 100%; height: 250px; border-radius: 12px;
-            overflow: hidden; margin-bottom: 10px; border: 1.5px solid #e2e8f0;
-            position: relative;
-        }
-        .map-instruction {
-            font-size: 0.75rem; color: #64748b; text-align: center;
-            margin-bottom: 10px; font-style: italic;
-        }
-        .btn-action {
-            padding: 12px; font-size: 0.9rem; font-weight: 700; border: none;
-            border-radius: 12px; color: white; cursor: pointer; transition: 0.2s; width: 100%;
-        }
+        /* --- Map & Autocomplete Styles --- */
+        #mapContainer { width: 100%; height: 250px; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1.5px solid #e2e8f0; position: relative; }
+        .btn-action { padding: 12px; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 12px; color: white; cursor: pointer; transition: 0.2s; width: 100%; }
         .btn-action:active { transform: scale(0.97); }
+        .btn-action:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .autocomplete-wrapper { position: relative; margin-bottom: 8px; }
+        .autocomplete-items {
+            position: absolute; border: 1px solid #e2e8f0; z-index: 99; top: 100%; left: 0; right: 0;
+            background: #fff; max-height: 160px; overflow-y: auto; border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: none;
+        }
+        .autocomplete-items div { padding: 12px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+        .autocomplete-items div:last-child { border-bottom: none; }
+        .autocomplete-items div:hover { background-color: #f8fafc; color: var(--primary); font-weight: 600; }
         
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .input-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
         input, select { 
-            width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; 
-            border-radius: 12px; font-size: 1rem; box-sizing: border-box; 
-            background: #fff; color: var(--text-main); outline: none; transition: 0.2s;
+            width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 1rem; 
+            box-sizing: border-box; background: #fff; color: var(--text-main); outline: none; transition: 0.2s;
         }
         input:focus { border-color: var(--mid-text); }
+        input[readonly] { background: #f1f5f9; color: #64748b; font-weight: 600; }
         .btn-save { background: var(--primary); color: white; margin-bottom: 10px; padding: 16px; width: 100%; border-radius: 12px; border: none; font-weight: 700; }
         .btn-calc { background: var(--accent); color: white; padding: 16px; width: 100%; border-radius: 12px; border: none; font-weight: 700; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
         
-        .result-box { 
-            margin-top: 15px; display: none; border-top: 2px dashed #e2e8f0; 
-            padding-top: 15px; animation: slideUp 0.4s ease-out;
-        }
+        .result-box { margin-top: 15px; display: none; border-top: 2px dashed #e2e8f0; padding-top: 15px; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .res-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
         .res-val { font-weight: 700; color: var(--primary); }
@@ -146,12 +126,15 @@
         <span class="card-title">Route Search & Navigation</span>
         
         <div class="input-group" style="margin-bottom: 10px;">
-            <input type="text" id="startLocation" placeholder="Start Location (e.g., Home)" style="margin-bottom: 8px;">
-            <input type="text" id="endLocation" placeholder="End Location (e.g., Workplace)">
+            <input type="text" id="startLocation" value="📍 Current Location (Auto)" readonly style="margin-bottom: 8px;">
+            <div class="autocomplete-wrapper">
+                <input type="text" id="endLocation" placeholder="Search Destination..." autocomplete="off">
+                <div id="autocompleteList" class="autocomplete-items"></div>
+            </div>
         </div>
-        <button id="btnSearch" class="btn-action" style="background: #3b82f6; margin-bottom: 15px;" onclick="searchAndRoute()">Search Route</button>
+        
+        <button id="btnSearch" class="btn-action" style="background: #3b82f6; margin-bottom: 15px;" onclick="calculateRouteFromCurrent()">Calculate Route</button>
 
-        <div class="map-instruction">Or tap 2 points directly on the map</div>
         <div id="mapContainer"></div>
         
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -219,6 +202,7 @@
     let waypoints = []; 
     let watchId = null;
     let userArrowFeature = null;
+    let destinationCoord = null; 
 
     const arrowSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="#3b82f6" stroke="#ffffff" stroke-width="2" d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>';
     const arrowUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(arrowSvg);
@@ -243,237 +227,101 @@
                 vectorLayer
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat([106.8797, -6.4820]), // Default center
+                center: ol.proj.fromLonLat([106.8797, -6.4820]), // Default Center (Bogor/Citeureup area)
                 zoom: 12
             }),
             controls: [] 
         });
-
-        map.on('singleclick', function (evt) {
-            if (waypoints.length >= 2) return; 
-
-            const coord = evt.coordinate;
-            const lonLat = ol.proj.toLonLat(coord);
-            waypoints.push(lonLat);
-
-            const marker = new ol.Feature({ geometry: new ol.geom.Point(coord) });
-            vectorSource.addFeature(marker);
-
-            if (waypoints.length === 2) {
-                calculateRoute();
-            }
-        });
     }
 
-    async function geocodeAddress(query) {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=1`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data && data.length > 0) {
-                return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-            }
-            return null;
-        } catch (error) {
-            console.error("Geocoding error:", error);
-            return null;
-        }
-    }
+    // --- AUTOCOMPLETE LOGIC ---
+    const endLocationInput = document.getElementById('endLocation');
+    const autocompleteList = document.getElementById('autocompleteList');
+    let typingTimer;
 
-    async function searchAndRoute() {
-        const startQuery = document.getElementById('startLocation').value;
-        const endQuery = document.getElementById('endLocation').value;
-        if (!startQuery || !endQuery) return alert("Please enter both start and end locations.");
-
-        const btnSearch = document.getElementById('btnSearch');
-        btnSearch.innerText = "Searching...";
-        btnSearch.disabled = true;
-
-        const startCoord = await geocodeAddress(startQuery);
-        const endCoord = await geocodeAddress(endQuery);
-
-        btnSearch.innerText = "Search Route";
-        btnSearch.disabled = false;
-
-        if (!startCoord) return alert(`Start location "${startQuery}" not found.`);
-        if (!endCoord) return alert(`End location "${endQuery}" not found.`);
-
-        vectorSource.clear();
-        waypoints = [startCoord, endCoord];
-
-        const startMarker = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(startCoord)) });
-        const endMarker = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(endCoord)) });
-        
-        vectorSource.addFeatures([startMarker, endMarker]);
-
-        const extent = ol.extent.boundingExtent([ol.proj.fromLonLat(startCoord), ol.proj.fromLonLat(endCoord)]);
-        map.getView().fit(extent, { padding: [50, 50, 50, 50], duration: 1000 });
-
-        calculateRoute();
-    }
-
-    async function calculateRoute() {
-        const p1 = waypoints[0].join(',');
-        const p2 = waypoints[1].join(',');
-        const url = `https://router.project-osrm.org/route/v1/driving/${p1};${p2}?overview=full&geometries=geojson`;
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.code === 'Ok') {
-                const route = data.routes[0];
-                const distanceKm = route.distance / 1000;
-                
-                const totalPP = (distanceKm * 2).toFixed(1);
-                document.getElementById('dailyCommute').value = totalPP;
-
-                const routeGeom = new ol.geom.LineString(route.geometry.coordinates).transform('EPSG:4326', 'EPSG:3857');
-                const routeFeature = new ol.Feature({ geometry: routeGeom });
-                vectorSource.addFeature(routeFeature);
-
-                document.getElementById('btnNav').style.display = 'block';
-
-                saveProfile();
-                if(document.getElementById('tankCurrent').value) calculate();
-            }
-        } catch (err) {
-            alert("Failed to calculate route. Check internet connection.");
-        }
-    }
-
-    function startRealtimeNavigation() {
-        if (!navigator.geolocation) return alert("Geolocation is not supported by your browser.");
-
-        const btnNav = document.getElementById('btnNav');
-        if (watchId !== null) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null;
-            btnNav.innerText = "Start Navigation";
-            btnNav.style.background = "#10b981";
+    endLocationInput.addEventListener('input', function() {
+        clearTimeout(typingTimer);
+        const query = this.value;
+        if (!query) {
+            autocompleteList.style.display = 'none';
+            destinationCoord = null;
             return;
         }
-
-        btnNav.innerText = "Stop Navigation";
-        btnNav.style.background = "#ef4444";
-
-        if (!userArrowFeature) {
-            userArrowFeature = new ol.Feature();
-            userArrowFeature.setStyle(new ol.style.Style({
-                image: new ol.style.Icon({ src: arrowUrl, scale: 1, anchor: [0.5, 0.5], rotateWithView: true })
-            }));
-            vectorSource.addFeature(userArrowFeature);
-        }
-
-        watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                const coords = [position.coords.longitude, position.coords.latitude];
-                const webMercatorCoords = ol.proj.fromLonLat(coords);
-
-                userArrowFeature.setGeometry(new ol.geom.Point(webMercatorCoords));
-                map.getView().animate({ center: webMercatorCoords, duration: 500, zoom: 17 });
-
-                if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
-                    const headingRadians = position.coords.heading * (Math.PI / 180);
-                    userArrowFeature.getStyle().getImage().setRotation(headingRadians);
-                    userArrowFeature.changed();
-                }
-            },
-            (error) => { console.warn("GPS Error: ", error.message); },
-            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-        );
-    }
-
-    function resetMap() {
-        waypoints = [];
-        vectorSource.clear();
-        document.getElementById('dailyCommute').value = '';
-        document.getElementById('btnNav').style.display = 'none';
-        userArrowFeature = null;
         
-        if (watchId !== null) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null;
-            const btnNav = document.getElementById('btnNav');
-            btnNav.innerText = "Start Navigation";
-            btnNav.style.background = "#10b981";
-        }
-    }
+        // Wait 500ms after user stops typing to fetch API
+        typingTimer = setTimeout(async () => {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                autocompleteList.innerHTML = '';
+                
+                if (data.length > 0) {
+                    autocompleteList.style.display = 'block';
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.innerText = item.display_name;
+                        div.addEventListener('click', () => {
+                            endLocationInput.value = item.display_name;
+                            destinationCoord = [parseFloat(item.lon), parseFloat(item.lat)];
+                            autocompleteList.style.display = 'none';
+                        });
+                        autocompleteList.appendChild(div);
+                    });
+                } else {
+                    autocompleteList.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Geocoding API error:", err);
+            }
+        }, 500); 
+    });
 
-    // --- APP LOGIC ---
-    window.addEventListener('DOMContentLoaded', () => {
-        initMap();
-        if(localStorage.getItem('fnav_tank')) {
-            document.getElementById('tankTotal').value = localStorage.getItem('fnav_tank');
-            document.getElementById('avgCons').value = localStorage.getItem('fnav_cons');
-            document.getElementById('dailyCommute').value = localStorage.getItem('fnav_commute');
-            document.getElementById('midAvg').innerText = parseFloat(localStorage.getItem('fnav_cons')).toFixed(1);
+    // Close autocomplete when clicking outside
+    document.addEventListener('click', function (e) {
+        if (e.target !== endLocationInput) {
+            autocompleteList.style.display = 'none';
         }
     });
 
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-
-    function saveProfile() {
-        const t = document.getElementById('tankTotal').value;
-        const c = document.getElementById('avgCons').value;
-        const r = document.getElementById('dailyCommute').value;
-        if(!t || !c || !r) return;
-        localStorage.setItem('fnav_tank', t);
-        localStorage.setItem('fnav_cons', c);
-        localStorage.setItem('fnav_commute', r);
-        document.getElementById('midAvg').innerText = parseFloat(c).toFixed(1);
-    }
-
-    function loadSavedPrice() {
-        const type = document.getElementById('fType').value;
-        if(type) {
-            const saved = localStorage.getItem('price_' + type);
-            document.getElementById('fuelPrice').value = saved || "";
+    // --- ROUTING & GPS LOGIC ---
+    async function calculateRouteFromCurrent() {
+        if (!destinationCoord) {
+            return alert("Please search and select a destination from the list first.");
         }
-    }
 
-    function calculate() {
-        const total = parseFloat(document.getElementById('tankTotal').value);
-        const current = parseFloat(document.getElementById('tankCurrent').value);
-        const cons = parseFloat(document.getElementById('avgCons').value);
-        const commute = parseFloat(document.getElementById('dailyCommute').value);
-        const price = parseFloat(document.getElementById('fuelPrice').value);
-        const fuelType = document.getElementById('fType').value;
+        const btnSearch = document.getElementById('btnSearch');
+        btnSearch.innerText = "Getting GPS Location...";
+        btnSearch.disabled = true;
 
-        if(!total || isNaN(current) || !cons || !commute || !price) return alert("Please fill in all data!");
-        if(fuelType) localStorage.setItem('price_' + fuelType, price);
+        if (!navigator.geolocation) {
+            btnSearch.innerText = "Calculate Route";
+            btnSearch.disabled = false;
+            return alert("Geolocation is not supported by your browser.");
+        }
 
-        const reserve = total * 0.125; 
-        const effectiveFuel = Math.max(0, current - reserve);
-        const range = effectiveFuel * cons;
-        const days = range / commute;
-        const topupCost = (total - current) * price;
-        
-        let barValue = Math.floor((effectiveFuel / (total - reserve)) * 8);
-        if (current <= reserve) barValue = 0;
+        // 1. Get User's Current GPS Location
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const currentCoord = [position.coords.longitude, position.coords.latitude];
+                waypoints = [currentCoord, destinationCoord];
 
-        document.getElementById('midRange').innerText = (current <= reserve) ? "LOW" : Math.floor(range);
-        document.getElementById('midAvg').innerText = cons.toFixed(1);
-        
-        const bars = document.querySelectorAll('.bar');
-        const iconE = document.getElementById('iconE');
-        iconE.classList.toggle('red', current <= reserve);
+                btnSearch.innerText = "Drawing Route...";
 
-        bars.forEach((bar, i) => {
-            bar.className = 'bar';
-            if (i < barValue) {
-                if (barValue <= 1) bar.classList.add('danger');
-                else if (barValue <= 3) bar.classList.add('warning');
-                else bar.classList.add('active');
-            }
-        });
+                // Map UI Updates
+                vectorSource.clear();
+                const startMarker = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(currentCoord)) });
+                const endMarker = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(destinationCoord)) });
+                vectorSource.addFeatures([startMarker, endMarker]);
 
-        document.getElementById('resDays').innerText = Math.floor(days) + " Days";
-        document.getElementById('resCost').innerText = price.toLocaleString('en-US', {style: 'currency', currency: 'IDR'});
-        document.getElementById('resultBox').style.display = "block";
-    }
-</script>
-</body>
-</html>
+                const extent = ol.extent.boundingExtent([ol.proj.fromLonLat(currentCoord), ol.proj.fromLonLat(destinationCoord)]);
+                map.getView().fit(extent, { padding: [50, 50, 50, 50], duration: 1000 });
+
+                // 2. Fetch OSRM Route Data
+                await fetchRouteData(currentCoord, destinationCoord);
+
+                btnSearch.innerText = "Calculate Route";
+                btnSearch.disabled = false;
+            },
+            (error) => {
+                alert("Please allow GPS Location access to calculate the route.");
