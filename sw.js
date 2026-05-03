@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fuelnav-pro-v2';
+const CACHE_NAME = 'fuelnav-pro-v3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
@@ -6,7 +6,7 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js'
 ];
 
-// Tahap Install: Simpan aset dasar ke cache
+// Install Event: Cache base assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -15,7 +15,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Tahap Aktifasi: Hapus cache lama jika ada pembaruan versi
+// Activate Event: Clear old caches when version updates
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -27,12 +27,12 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Strategi Fetch: Ambil dari cache jika offline, ambil dari network jika online
+// Fetch Strategy: Cache first, falling back to network
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((fetchResponse) => {
-        // Simpan hasil fetch baru ke cache (untuk aset dinamis)
+        // Cache dynamic external requests (like maps logic if needed)
         return caches.open(CACHE_NAME).then((cache) => {
           if (event.request.url.startsWith('http')) {
              cache.put(event.request, fetchResponse.clone());
@@ -41,7 +41,7 @@ self.addEventListener('fetch', (event) => {
         });
       });
     }).catch(() => {
-      // Opsi fallback jika benar-benar tidak ada internet dan cache kosong
+      // Offline fallback
       return caches.match('./index.html');
     })
   );
