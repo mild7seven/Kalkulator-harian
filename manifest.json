@@ -1,17 +1,23 @@
 {
-  "name": "FuelNav Pro - Fuel & MID Calc",
-  "short_name": "FuelNav",
-  "description": "Kalkulator bahan bakar dengan tampilan Multi-Information Display (MID) mobil.",
-  "start_url": "index.html",
+  "name": "FuelNav Pro: Intelligent Fuel Tracker",
+  "short_name": "FuelNav Pro",
+  "description": "Kalkulator BBM Digital dengan Integrasi Peta Rute",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
   "theme_color": "#1e293b",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/833/833339.png",
-      "sizes": "512x512",
+      "src": "icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
