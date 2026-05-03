@@ -1,7 +1,7 @@
 {
   "name": "FuelNav Pro: Intelligent Fuel Tracker",
   "short_name": "FuelNav Pro",
-  "description": "Kalkulator BBM Digital dengan Integrasi Peta Rute",
+  "description": "Digital Fuel Calculator with Integrated Route Mapping",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
